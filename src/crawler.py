@@ -6,6 +6,7 @@ import json
 import time
 
 BASE_URL = "https://quotes.toscrape.com"
+POLITENESS_WINDOW = 6
 
 class Crawler:
     def __init__(self, base_url: str):
@@ -167,11 +168,11 @@ class Crawler:
             # get all links from the page
             self.extract_all_links(html_content)
 
-            self.visited_urls[url]["status"] = "visted"
+            self.visited_urls[url]["status"] = "visited"
 
             print(f"Visiting page {url}, page number {len(self.visited_urls)}")
 
-            time.sleep(6)
+            time.sleep(POLITENESS_WINDOW)
 
     
     def extract_all_links(self, html_content: str) -> None:
