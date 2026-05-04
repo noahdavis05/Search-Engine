@@ -152,7 +152,7 @@ class Crawler:
             json.dump(data, f, indent=4)
 
 
-    def crawl_site(self):
+    def crawl_site(self) -> None:
         """Crawls the whole website using breadth first, visiting every single link within the website
         Crawled pages are saved to the JSON file.
         """
