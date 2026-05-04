@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
 import string
-import os
 from pathlib import Path
 import json
 
@@ -17,22 +16,26 @@ class Crawler:
         self.results_file_path = self.data_dir / "raw_pages.json"
         # ensure the results file exists
         if not self.results_file_path.exists():
-            self.results_file_path.write_text("[]", encoding="utf-8")
+            self.results_file_path.write_text("{}", encoding="utf-8")
 
     def request_page(self, url: str) -> None:
-        """
-        Fetches the content of the given URL and returns all words in a list
-        """
-        response = requests.get(url)
+        """Requests the content of a given URL, extracts the text and saves it to JSON file
 
-        if response.status_code == 200:
+        Args:
+            url (str): URL of the given page to be scraped.
+        """
+        try:
+            response = requests.get(url, timeout=10) 
+            response.raise_for_status() 
+
             html_content = response.text
             extracted_text = self.extract_text_from_html(html_content)
             self.save_page_to_json(extracted_text, url)
-        else:
-            print(f"Failed to fetch page: {response.status_code}")
+        except requests.exceptions.HTTPError as http_err:
+            print(f"HTTP error occurred: {http_err}") 
+        except Exception as err:
+            print(f"An unexpected error occurred: {err}")
 
-    
     def extract_text_from_html(self, html_content:str) -> list[str]:
         """Given the pure HTML content of a webpage this function extracts only
         the important text content
@@ -52,7 +55,7 @@ class Crawler:
             page_title = soup.find("h3").get_text(strip=False)
             title_words = page_title.split()
             all_words += self.clean_list_of_strings(title_words)
-        except:
+        except AttributeError:
             print("No Page Title Found")
         
         # scrape just each quote, its author, and tags
@@ -94,7 +97,7 @@ class Crawler:
             strings (list[str]): list of words with punctuation
 
         Returns:
-            list[str]: list of words without puntuation
+            list[str]: list of words without punctuation
         """
         extended_punctuation = string.punctuation + "“”‘’—–…"
         cleaned_list = []
@@ -138,6 +141,6 @@ class Crawler:
             json.dump(data, f, indent=4)
 
 
-c = Crawler("temp")
-
-c.request_page("https://quotes.toscrape.com/tag/love/")
+if __name__ == "__main__":
+    c = Crawler("temp")
+    c.request_page("https://quotes.toscrape.com/tag/love/")
