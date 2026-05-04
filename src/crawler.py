@@ -1,12 +1,23 @@
 from bs4 import BeautifulSoup
 import requests
 import string
+import os
+from pathlib import Path
+import json
 
 class Crawler:
-    def __init__(self, base_url: str, data_file: str):
+    def __init__(self, base_url: str):
         self.url: str = base_url
-        self.results_file_path: str = data_file
         self.visited_urls: set[str] = set()
+
+        # set the path for where data will be saved
+        src_dir = Path(__file__).resolve().parent
+        self.data_dir = src_dir.parent / "data"
+        self.data_dir.mkdir(exist_ok=True)
+        self.results_file_path = self.data_dir / "raw_pages.json"
+        # ensure the results file exists
+        if not self.results_file_path.exists():
+            self.results_file_path.write_text("[]", encoding="utf-8")
 
     def request_page(self, url: str) -> None:
         """
@@ -16,7 +27,8 @@ class Crawler:
 
         if response.status_code == 200:
             html_content = response.text
-            self.extract_text_from_html(html_content)
+            extracted_text = self.extract_text_from_html(html_content)
+            self.save_page_to_json(extracted_text, url)
         else:
             print(f"Failed to fetch page: {response.status_code}")
 
@@ -93,8 +105,39 @@ class Crawler:
             if cleaned_word != "":
                 cleaned_list.append(cleaned_word)
         return cleaned_list
+    
+    def save_page_to_json(self, extracted_text: list[str], url: str):
+        """Takes the URL and text content for a page and saves the results to our
+        raw data file.
+
+        Args:
+            extracted_text (list[str]): Cleaned text from the webpage in form of a list
+            url (str): url of the page
+        """
+        file_path = Path(self.results_file_path)
+        data: dict[str, list[str]] = {}
+
+        # load the data
+        if file_path.exists() and file_path.stat().st_size > 0:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    loaded_data = json.load(f)
+                    # ensure the loaded data is actually a dictionary
+                    if isinstance(loaded_data, dict):
+                        data = loaded_data
+                    else:
+                        data = {}
+            except json.JSONDecodeError:
+                data = {}
+
+        # add the new data
+        data[url] = extracted_text
+
+        # write back to the file
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4)
 
 
-c = Crawler("temp", "temp")
+c = Crawler("temp")
 
 c.request_page("https://quotes.toscrape.com/tag/love/")
