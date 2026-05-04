@@ -3,11 +3,15 @@ import requests
 import string
 from pathlib import Path
 import json
+import time
+
+BASE_URL = "https://quotes.toscrape.com"
 
 class Crawler:
     def __init__(self, base_url: str):
-        self.url: str = base_url
-        self.visited_urls: set[str] = set()
+        self.visited_urls: dict[str, dict] = {
+            base_url: {"status": "unvisited", "order": 0}
+        }
 
         # set the path for where data will be saved
         src_dir = Path(__file__).resolve().parent
@@ -18,11 +22,14 @@ class Crawler:
         if not self.results_file_path.exists():
             self.results_file_path.write_text("{}", encoding="utf-8")
 
-    def request_page(self, url: str) -> None:
+    def request_page(self, url: str) -> str:
         """Requests the content of a given URL, extracts the text and saves it to JSON file
 
         Args:
             url (str): URL of the given page to be scraped.
+
+        Returns:
+            str: The HTML content of the page is returned to pass to another function.
         """
         try:
             response = requests.get(url, timeout=10) 
@@ -31,10 +38,13 @@ class Crawler:
             html_content = response.text
             extracted_text = self.extract_text_from_html(html_content)
             self.save_page_to_json(extracted_text, url)
+            return html_content
         except requests.exceptions.HTTPError as http_err:
             print(f"HTTP error occurred: {http_err}") 
         except Exception as err:
             print(f"An unexpected error occurred: {err}")
+
+        return ""
 
     def extract_text_from_html(self, html_content:str) -> list[str]:
         """Given the pure HTML content of a webpage this function extracts only
@@ -141,6 +151,62 @@ class Crawler:
             json.dump(data, f, indent=4)
 
 
+    def crawl_site(self):
+        """Crawls the whole website using breadth first, visiting every single link within the website
+        Crawled pages are saved to the JSON file.
+        """
+        while len([k for k, v in self.visited_urls.items() if v['status'] == "unvisited"]) > 0:
+            url = min(
+                (k for k, v in self.visited_urls.items() if v['status'] == "unvisited"),
+                key=lambda k: self.visited_urls[k]['order']
+            )
+
+            # scrape the given url
+            html_content = self.request_page(url) 
+
+            # get all links from the page
+            self.extract_all_links(html_content)
+
+            self.visited_urls[url]["status"] = "visted"
+
+            print(f"Visiting page {url}, page number {len(self.visited_urls)}")
+
+            time.sleep(6)
+
+    
+    def extract_all_links(self, html_content: str) -> None:
+        """Extracts all links for a given page, and adds all unvisited links to the dictionary
+        used in breadth first search.
+
+        Args:
+            html_content (str): Raw HTML content of the current page.
+        """
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        try:
+            links = soup.find_all("a", href=True)
+            
+            urls = []
+            for link in links:
+                # ensure we never scrape links which leave this website
+                if "https://" in link.get("href") or "www." in link.get("href"):
+                    continue
+                temp_url = BASE_URL + link.get("href")
+                urls.append(temp_url)
+                
+            
+            # now check if these URLs are already in our list
+            for url in urls:
+                if url not in self.visited_urls.keys():
+                    self.visited_urls[url] = {"status": "unvisited", "order": len(self.visited_urls) + 1}
+        except Exception as e:
+            print(f"Error extracting links: {e}")
+
+        
+
+
+            
+
 if __name__ == "__main__":
-    c = Crawler("temp")
-    c.request_page("https://quotes.toscrape.com/tag/love/")
+    c = Crawler("https://quotes.toscrape.com/")
+    c.crawl_site()
