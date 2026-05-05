@@ -1,0 +1,1 @@
+[![codecov](https://codecov.io/github/noahdavis05/Search-Engine/graph/badge.svg?token=TE1B468MLI)](https://codecov.io/github/noahdavis05/Search-Engine)
