@@ -89,4 +89,4 @@ class Search:
 
 if __name__ == "__main__":
     s = Search()
-    print(s.search("Einstein"))
+    print(s.search("gibraltar"))
