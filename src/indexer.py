@@ -14,6 +14,12 @@ class Indexer:
         self.stop_words = self.nlp.Defaults.stop_words
 
     def clean_scraped_data(self) -> dict:
+        """Reads the already scraped website data and cleans it using scrapy library.
+        This lemmatizes words and removes common terms.
+
+        Returns:
+            dict: Dictionary of clean data mapping websites to all words on it (in order of occurrence)
+        """
         # read in the scraped JSON data
         with self.scraped_data_path.open("r", encoding="utf-8") as f:
             scraped_data = json.load(f)
@@ -36,6 +42,16 @@ class Indexer:
         return scraped_data
     
     def create_inverted_index(self, scraped_data: dict) -> dict:
+        """Takes the cleaned scraped data as a dictionary and inverts it.
+        Meaning it maps words to the websites they appear on, and what index within
+        each page they appear on.
+
+        Args:
+            scraped_data (dict): Scraped and cleaned input dicitonary
+
+        Returns:
+            dict: dictionary mapping words to websites
+        """
         inverted_index = {}
 
         # iterate over all words for each webpage
@@ -60,30 +76,27 @@ class Indexer:
 
     
     def save_inverted_index(self, inverted_index: dict) -> None:
+        """Saves the inverted index to its file.
+        The file is completely overwritten by this function
+
+        Args:
+            inverted_index (dict): the full dictionary to be written to the file
+        """
         with open(self.indexed_data_path, "w", encoding="utf-8") as f:
             json.dump(inverted_index, f, indent=4)
 
 
     def index(self) -> None:
+        """The full indexing pipeline of cleaning, inverting, and saving
+        """
         scraped_data = self.clean_scraped_data()
         inverted_index = self.create_inverted_index(scraped_data)
         self.save_inverted_index(inverted_index)
 
 
 
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
     i = Indexer()
-
     i.index()
     
 
