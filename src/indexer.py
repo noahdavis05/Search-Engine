@@ -11,10 +11,9 @@ class Indexer:
         self.indexed_data_path = self.data_dir / "indexed_data.json"
 
         self.nlp = spacy.load("en_core_web_sm")
-        self.stop_words = self.nlp.Defaults.stop_words
 
-    def clean_scraped_data(self) -> dict:
-        """Reads the already scraped website data and cleans it using scrapy library.
+    def clean_scraped_data(self) -> dict[str, list[str]]:
+        """Reads the already scraped website data and cleans it using spaCy library.
         This lemmatizes words and removes common terms.
 
         Returns:
@@ -41,13 +40,13 @@ class Indexer:
 
         return scraped_data
     
-    def create_inverted_index(self, scraped_data: dict) -> dict:
+    def create_inverted_index(self, scraped_data: dict[str, list[str]]) -> dict[str, dict[str, list[int]]]:
         """Takes the cleaned scraped data as a dictionary and inverts it.
         Meaning it maps words to the websites they appear on, and what index within
         each page they appear on.
 
         Args:
-            scraped_data (dict): Scraped and cleaned input dicitonary
+            scraped_data (dict): Scraped and cleaned input dictionary
 
         Returns:
             dict: dictionary mapping words to websites
@@ -75,7 +74,7 @@ class Indexer:
         return inverted_index
 
     
-    def save_inverted_index(self, inverted_index: dict) -> None:
+    def save_inverted_index(self, inverted_index: dict[str, dict[str, list[int]]]) -> None:
         """Saves the inverted index to its file.
         The file is completely overwritten by this function
 
