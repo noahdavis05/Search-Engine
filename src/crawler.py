@@ -203,10 +203,7 @@ class Crawler:
         except Exception as e:
             print(f"Error extracting links: {e}")
 
-        
-
-
-            
+               
 
 if __name__ == "__main__":
     c = Crawler("https://quotes.toscrape.com/")

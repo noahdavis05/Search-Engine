@@ -1,7 +1,9 @@
 import pytest 
 import json
+import requests
 from src.crawler import Crawler, BASE_URL
 from globals import HTML_CONTENT1, HTML_CONTENT2, HTML_CONTENT3, HTML_CONTENT4, HTML_CONTENT5, HTML_CONTENT6
+from globals import FULL_SITE_HOME, FULL_SITE_AUTHOR, FULL_SITE_TAG_TAG
 
 
 
@@ -59,6 +61,11 @@ REQUEST_PAGE_TEST_CASES = [
         "https://quotes.toscrape.com/",
         HTML_CONTENT1,
         ["page", "title", "this", "is", "a", "quote", "noah", "davis", "tag"]
+    ),
+    (
+        "https://quotes.toscrape.com/",
+        HTML_CONTENT2,
+        ["page", "title", "this", "is", "a", "quote", "noah", "davis", "tag", "this", "is", "another", "quote", "noah", "davis", "tag"]
     )
 ]
 @pytest.mark.parametrize("mock_url, html_content, expected_words",REQUEST_PAGE_TEST_CASES)
@@ -90,3 +97,59 @@ def test_request_page_end_to_end(requests_mock, tmp_path, mock_url, html_content
 
 
 
+
+ERROR_TEST_CASES = [
+    (
+        "HTTP error occurred",
+        {"status_code": 404}
+    ),
+    (
+        "An unexpected error occurred",
+        {"exc": requests.exceptions.ConnectTimeout}
+    )
+]
+@pytest.mark.parametrize("error_message, request_args", ERROR_TEST_CASES)
+def test_request_page_http_error(requests_mock, capsys, error_message, request_args):
+    c = Crawler(BASE_URL)
+    url = f"{BASE_URL}/bad-page"
+
+    requests_mock.get(url, **request_args)
+
+    result = c.request_page(url)
+
+    assert result == ""  
+    captured = capsys.readouterr()
+    assert error_message in captured.out
+
+
+## Full test with a full mock site to crawl
+def test_crawl_full_site(tmp_path, requests_mock, monkeypatch):
+    temp_results_file = tmp_path / "test_raw_pages.json"
+    
+    c = Crawler(BASE_URL)
+    c.results_file_path = temp_results_file
+
+    # mock the 3 pages on the website
+    requests_mock.get(BASE_URL, text=FULL_SITE_HOME)
+    requests_mock.get(BASE_URL + "/author/Noah-Davis", text=FULL_SITE_AUTHOR)
+    requests_mock.get(BASE_URL + "/tag", text=FULL_SITE_TAG_TAG)
+
+    # mock the 6 second politeness window to nothing
+    monkeypatch.setattr("time.sleep", lambda x: None)
+
+    c.crawl_site()
+
+    assert temp_results_file.exists()
+    with open(temp_results_file, "r", encoding="utf-8") as f:
+        saved_data = json.load(f)
+
+    ## assert all the URLs are in saved data
+    assert BASE_URL in saved_data
+    assert BASE_URL + "/author/Noah-Davis" in saved_data
+    assert BASE_URL + "/tag" in saved_data
+
+    ## assert the correct words have been added
+    assert saved_data[BASE_URL] == ["page", "title", "this", "is", "a", "quote", "noah", "davis", "tag"]
+    assert saved_data[BASE_URL + "/author/Noah-Davis"] == ["noah", "davis"]
+    ## Note lemmatization and stop-word removal removed some 'a's from the output compared to the original HTML. But this is expected behaviour
+    assert saved_data[BASE_URL + "/tag"] == ["tag", "quotes", "this", "is", "a", "quote", "about", "tag", "noah", "davis", "tag", "this", "is", "another", "quote", "about", "tag", "noah", "davis", "tag"]

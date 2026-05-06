@@ -112,3 +112,60 @@ HTML_CONTENT6 = """
         </div>
     </div>
 """
+
+
+FULL_SITE_HOME = """
+    <div class="container">
+        <h3>Page Title</h3> 
+        
+        <div class="quote" itemscope="" itemtype="">
+            <span class="text" itemprop="text">
+                “This is a quote”
+            </span>
+            <span>by <small class="author" itemprop="author">Noah Davis</small>
+                <a href="/author/Noah-Davis">(about)</a>
+            </span>
+            <div class="tags">
+                Tags:
+                <a class="tag" href="/tag">tag</a>
+            </div>
+        </div>
+    </div>
+"""
+
+FULL_SITE_AUTHOR = """
+    <h3>Noah Davis</h3>
+"""
+
+FULL_SITE_TAG_TAG = """
+    <div class="container">
+        <h3>Tag Quotes</h3> 
+        
+        <div class="quote" itemscope="" itemtype="">
+            <span class="text" itemprop="text">
+                “This is a quote about tag”
+            </span>
+            <span>by <small class="author" itemprop="author">Noah Davis</small>
+                <a href="/author/Noah-Davis">(about)</a>
+            </span>
+            <div class="tags">
+                Tags:
+                <a class="tag" href="/tag">tag</a>
+            </div>
+        </div>
+        <div class="quote" itemscope="" itemtype="">
+            <span class="text" itemprop="text">
+                “This is another quote about tag”
+            </span>
+            <span>by <small class="author" itemprop="author">Noah Davis</small>
+                <a href="/author/Noah-Davis">(about)</a>
+            </span>
+            <div class="tags">
+                Tags:
+                <-- This tag ensures that the crawler never leaves the website -->
+                <a class="tag" href="https://www.bbc.co.uk">tag</a>
+            </div>
+        </div>
+    </div>
+
+"""
