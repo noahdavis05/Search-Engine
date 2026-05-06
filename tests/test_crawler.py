@@ -1,5 +1,6 @@
 import pytest 
 import json
+import requests
 from src.crawler import Crawler, BASE_URL
 from globals import HTML_CONTENT1, HTML_CONTENT2, HTML_CONTENT3, HTML_CONTENT4, HTML_CONTENT5, HTML_CONTENT6
 from globals import FULL_SITE_HOME, FULL_SITE_AUTHOR, FULL_SITE_TAG_TAG
@@ -93,6 +94,32 @@ def test_request_page_end_to_end(requests_mock, tmp_path, mock_url, html_content
     # The keys in the JSON should be the URL, and values the cleaned word list
     assert mock_url in saved_data
     assert saved_data[mock_url] == expected_words
+
+
+
+
+ERROR_TEST_CASES = [
+    (
+        "HTTP error occurred",
+        {"status_code": 404}
+    ),
+    (
+        "An unexpected error occurred",
+        {"exc": requests.exceptions.ConnectTimeout}
+    )
+]
+@pytest.mark.parametrize("error_message, request_args", ERROR_TEST_CASES)
+def test_request_page_http_error(requests_mock, capsys, error_message, request_args):
+    c = Crawler(BASE_URL)
+    url = f"{BASE_URL}/bad-page"
+
+    requests_mock.get(url, **request_args)
+
+    result = c.request_page(url)
+
+    assert result == ""  
+    captured = capsys.readouterr()
+    assert error_message in captured.out
 
 
 ## Full test with a full mock site to crawl

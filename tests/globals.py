@@ -162,7 +162,8 @@ FULL_SITE_TAG_TAG = """
             </span>
             <div class="tags">
                 Tags:
-                <a class="tag" href="/tag">tag</a>
+                <-- This tag ensures that the crawler never leaves the website -->
+                <a class="tag" href="https://www.bbc.co.uk">tag</a>
             </div>
         </div>
     </div>
