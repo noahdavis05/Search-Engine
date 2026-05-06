@@ -6,18 +6,22 @@ import math
 class Search:
 
     def __init__(self) -> None:
-        src_dir = Path(__file__).resolve().parent
-        self.data_dir = src_dir.parent / "data"
-        self.scraped_data_path = self.data_dir / "raw_pages.json"
-        self.indexed_data_path = self.data_dir / "indexed_data.json"
+        try:
+            src_dir = Path(__file__).resolve().parent
+            self.data_dir = src_dir.parent / "data"
+            self.scraped_data_path = self.data_dir / "raw_pages.json"
+            self.indexed_data_path = self.data_dir / "indexed_data.json"
 
-        with open(self.scraped_data_path, "r", encoding="utf-8") as f:
-            self.scraped_data = json.load(f)
+            with open(self.scraped_data_path, "r", encoding="utf-8") as f:
+                self.scraped_data = json.load(f)
 
-        with open(self.indexed_data_path, "r", encoding="utf-8") as f:
-            self.indexed_data = json.load(f)
+            with open(self.indexed_data_path, "r", encoding="utf-8") as f:
+                self.indexed_data = json.load(f)
 
-        self.nlp = spacy.load("en_core_web_sm")
+            self.nlp = spacy.load("en_core_web_sm")
+        except (FileNotFoundError, ValueError) as e:
+            raise RuntimeError(f"Initialization Failed: {e}") from e
+
 
     def search(self, term: str) -> list[tuple]:
         """Search for a word or multiple words
@@ -85,6 +89,37 @@ class Search:
         ]
         
         return clean_query
+    
+    def print_index(self, keyword: str):
+        """Print the inverted index for a given term
+
+        Args:
+            keyword (str): the given word we want the index for
+        """
+        cleaned_keyword = self.process_query(keyword)
+        
+        # Check if the keyword exists after processing
+        if not cleaned_keyword or cleaned_keyword[0] not in self.indexed_data:
+            print(f"Term '{keyword}' not in index")
+            return
+        
+        target_word = cleaned_keyword[0]
+        
+        # create a hard copy so we don't edit the old in making number of occurrences instead of indexes of poisionts
+        occurrences_map = {
+            page_id: len(locations) 
+            for page_id, locations in self.indexed_data[target_word].items()
+        }
+
+        index = 0
+        print(f"{'#':<5} | {'Page URL':<70} | {'Occurrences':<5}")
+        print("-" * 95)
+        for page, count in occurrences_map.items():
+            index += 1
+            print(f"{index:<5} | {page:<70} | {count:<5}")
+
+
+        
 
 
 if __name__ == "__main__":
