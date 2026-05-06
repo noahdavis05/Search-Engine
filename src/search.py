@@ -118,10 +118,3 @@ class Search:
             index += 1
             print(f"{index:<5} | {page:<70} | {count:<5}")
 
-
-        
-
-
-if __name__ == "__main__":
-    s = Search()
-    print(s.search("gibraltar"))
