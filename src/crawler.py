@@ -67,7 +67,6 @@ class Crawler:
         if author_details is not None:
             split_text = author_details.get_text(strip=True).split()
             all_words = self.clean_list_of_strings(split_text)
-            print(all_words)
             return all_words
 
 
