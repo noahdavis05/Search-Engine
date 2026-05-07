@@ -91,11 +91,3 @@ class Indexer:
         scraped_data = self.clean_scraped_data()
         inverted_index = self.create_inverted_index(scraped_data)
         self.save_inverted_index(inverted_index)
-
-
-
-if __name__ == "__main__":
-    i = Indexer()
-    i.index()
-    
-

@@ -9,7 +9,7 @@ BASE_URL = "https://quotes.toscrape.com"
 POLITENESS_WINDOW = 6
 
 class Crawler:
-    def __init__(self, base_url: str):
+    def __init__(self, base_url: str = BASE_URL +"/"):
         self.visited_urls: dict[str, dict] = {
             base_url: {"status": "unvisited", "order": 0}
         }
@@ -204,7 +204,3 @@ class Crawler:
             print(f"Error extracting links: {e}")
 
                
-
-if __name__ == "__main__":
-    c = Crawler("https://quotes.toscrape.com/")
-    c.crawl_site()
