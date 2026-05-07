@@ -61,6 +61,15 @@ class Crawler:
 
         all_words = []
 
+        # try and get the full author details assuming it is an author page
+        # otherwise just continue
+        author_details = soup.find("div", class_="author-details")
+        if author_details is not None:
+            split_text = author_details.get_text(strip=True).split()
+            all_words = self.clean_list_of_strings(split_text)
+            return all_words
+
+
         # get the page title (if there is one)
         try:
             page_title = soup.find("h3").get_text(strip=False)
@@ -202,5 +211,3 @@ class Crawler:
                     self.visited_urls[url] = {"status": "unvisited", "order": len(self.visited_urls) + 1}
         except Exception as e:
             print(f"Error extracting links: {e}")
-
-               
