@@ -13,7 +13,7 @@ from src import main
 
 
 def test_help_prints_menu(capsys: "pytest.CaptureFixture[str]") -> None:
-    """Help menu prints a short, well-formatted command list."""
+    """Tests that the help menu prints the available CLI commands."""
     main.help()
     captured = capsys.readouterr()
     assert "SEARCH ENGINE COMMANDS" in captured.out
@@ -22,14 +22,14 @@ def test_help_prints_menu(capsys: "pytest.CaptureFixture[str]") -> None:
 
 
 def test_find_no_index_loaded(capsys: "pytest.CaptureFixture[str]") -> None:
-    """`find` warns the user when the index has not been loaded."""
+    """Tests that `find` refuses to run before the index is loaded."""
     main.find(["find", "term"], None)
     captured = capsys.readouterr()
     assert "Index must be loaded to memory" in captured.out
 
 
 def test_find_empty_search_term(capsys: "pytest.CaptureFixture[str]") -> None:
-    """`find` warns when no search phrase is provided and does not call `Search.search`."""
+    """Tests that `find` rejects an empty query without calling search."""
     s = MagicMock()
     main.find(["find"], s)
     captured = capsys.readouterr()
@@ -38,7 +38,11 @@ def test_find_empty_search_term(capsys: "pytest.CaptureFixture[str]") -> None:
 
 
 def test_find_prints_results(capsys: "pytest.CaptureFixture[str]") -> None:
-    """`find` prints each matched URL returned by `Search.search` in order."""
+    """Tests that `find` prints each search result returned by `Search.search`.
+
+    `Search.search` is mocked so only the CLI formatting and iteration logic are
+    being checked.
+    """
     s = MagicMock()
     s.search.return_value = [("https://a.example", 1), ("https://b.example", 2)]
     main.find(["find", "a"], s)
@@ -50,14 +54,14 @@ def test_find_prints_results(capsys: "pytest.CaptureFixture[str]") -> None:
 
 
 def test_print_index_no_index_loaded(capsys: "pytest.CaptureFixture[str]") -> None:
-    """`print_index` warns when called before the index is loaded."""
+    """Tests that `print_index` refuses to run before loading the index."""
     main.print_index(["print", "term"], None)
     captured = capsys.readouterr()
     assert "Index must be loaded to memory" in captured.out
 
 
 def test_print_index_no_term_specified(capsys: "pytest.CaptureFixture[str]") -> None:
-    """`print_index` requires a term argument and should not call `Search.print_index` otherwise."""
+    """Tests that `print_index` requires a term before delegating to search."""
     s = MagicMock()
     main.print_index(["print"], s)
     captured = capsys.readouterr()
@@ -66,14 +70,18 @@ def test_print_index_no_term_specified(capsys: "pytest.CaptureFixture[str]") -> 
 
 
 def test_print_index_calls_search_print_index(capsys: "pytest.CaptureFixture[str]") -> None:
-    """When a term is provided, `print_index` delegates to `Search.print_index` with that term."""
+    """Tests that `print_index` delegates to `Search.print_index` with the term."""
     s = MagicMock()
     main.print_index(["print", "hello"], s)
     s.print_index.assert_called_once_with("hello")
 
 
 def test_load_search_not_exists(capsys: "pytest.CaptureFixture[str]") -> None:
-    """If constructing `Search()` raises, `load` reports and returns `None`."""
+    """Tests that `load` reports a missing index when `Search()` fails.
+
+    `Search()` is mocked to raise `RuntimeError` so the error path can be
+    checked without needing real index files on disk.
+    """
     with patch.object(main, "Search", side_effect=RuntimeError):
         res = main.load(None)
     captured = capsys.readouterr()
@@ -82,7 +90,7 @@ def test_load_search_not_exists(capsys: "pytest.CaptureFixture[str]") -> None:
 
 
 def test_load_success_creates_search(capsys: "pytest.CaptureFixture[str]") -> None:
-    """`load` returns the newly created `Search` instance and prints a confirmation."""
+    """Tests that `load` creates a `Search` object and confirms success."""
     fake_search = MagicMock()
     with patch.object(main, "Search", return_value=fake_search):
         res = main.load(None)
@@ -92,7 +100,7 @@ def test_load_success_creates_search(capsys: "pytest.CaptureFixture[str]") -> No
 
 
 def test_load_returns_existing(capsys: "pytest.CaptureFixture[str]") -> None:
-    """When a `Search` instance is passed, `load` returns it unchanged and prints confirmation."""
+    """Tests that `load` reuses an existing `Search` instance."""
     s = MagicMock()
     res = main.load(s)
     captured = capsys.readouterr()
@@ -101,7 +109,11 @@ def test_load_returns_existing(capsys: "pytest.CaptureFixture[str]") -> None:
 
 
 def test_build_calls_crawler_and_indexer() -> None:
-    """`build` instantiates `Crawler` and `Indexer` and invokes their build methods."""
+    """Tests that `build` creates the crawler and indexer and runs both steps.
+
+    `Crawler` and `Indexer` are mocked because their own behavior is covered by
+    dedicated tests; this test only checks the orchestration in `main`.
+    """
     fake_crawler = MagicMock()
     fake_indexer = MagicMock()
     with patch.object(main, "Crawler", return_value=fake_crawler) as pc, \
@@ -115,7 +127,7 @@ def test_main_flow_handles_empty_and_invalid_and_exit(
     monkeypatch: "pytest.MonkeyPatch",
     capsys: "pytest.CaptureFixture[str]",
 ) -> None:
-    """Basic `main()` interactive flow: empty input, invalid command, then exit."""
+    """Tests the interactive command loop for empty, invalid, and exit input."""
     # supply inputs: empty -> invalid -> exit
     inputs = ["", "badcommand", "exit"]
     monkeypatch.setattr("builtins.input", lambda prompt=None, it=iter(inputs): next(it))

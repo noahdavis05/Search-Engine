@@ -33,6 +33,11 @@ SEARCH_TEST_CASES = [
 ]
 @pytest.mark.parametrize("search_terms, webPages", SEARCH_TEST_CASES)
 def test_search_clean_way(search_terms, webPages):
+    """Tests ranked search results for single and multi-word queries.
+
+    The scraped and indexed data are mocked so search ranking is verified in
+    isolation from the crawler and indexer.
+    """
     s = Search()
 
     # mock the json data
@@ -70,7 +75,10 @@ SEARCH_PRINT_INDEX_CASES = [
 
 @pytest.mark.parametrize("keyword, expected_rows", SEARCH_PRINT_INDEX_CASES)
 def test_print_index_table(keyword: str, expected_rows: list[tuple], capsys: "pytest.CaptureFixture[str]") -> None:
-    """Testing the output table produced by the print_index function
+    """Tests the table output produced by `print_index`.
+
+    The search data is mocked so the output can be checked deterministically
+    without depending on the real JSON files.
     """
     s = Search()
 

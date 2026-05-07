@@ -46,9 +46,7 @@ EXTRACT_TEST_CASES = [
 
 @pytest.mark.parametrize("html_input, expected_output", EXTRACT_TEST_CASES)
 def test_extract_text_from_html(html_input, expected_output):
-    """
-    Run tests on the `extract_text_from_html` function
-    """
+    """Tests HTML extraction and cleaning from quote pages."""
     c = Crawler(BASE_URL)
     result = c.extract_text_from_html(html_input)
     assert result == expected_output
@@ -70,6 +68,11 @@ REQUEST_PAGE_TEST_CASES = [
 ]
 @pytest.mark.parametrize("mock_url, html_content, expected_words",REQUEST_PAGE_TEST_CASES)
 def test_request_page_end_to_end(requests_mock, tmp_path, mock_url, html_content, expected_words):
+    """Tests downloading a page and saving the cleaned words to disk.
+
+    The HTTP request is mocked so the test stays deterministic and does not
+    depend on the live website.
+    """
     temp_results_file = tmp_path / "test_raw_pages.json"
     
     c = Crawler(BASE_URL)
@@ -110,6 +113,7 @@ ERROR_TEST_CASES = [
 ]
 @pytest.mark.parametrize("error_message, request_args", ERROR_TEST_CASES)
 def test_request_page_http_error(requests_mock, capsys, error_message, request_args):
+    """Tests request failure handling for HTTP errors and connection timeouts."""
     c = Crawler(BASE_URL)
     url = f"{BASE_URL}/bad-page"
 
@@ -124,6 +128,12 @@ def test_request_page_http_error(requests_mock, capsys, error_message, request_a
 
 ## Full test with a full mock site to crawl
 def test_crawl_full_site(tmp_path, requests_mock, monkeypatch):
+    """Tests the full crawl flow against a fully mocked site.
+
+    The site, network responses, and sleep delay are mocked so the crawl can
+    be verified quickly without waiting for the politeness window or making
+    external requests.
+    """
     temp_results_file = tmp_path / "test_raw_pages.json"
     
     c = Crawler(BASE_URL)

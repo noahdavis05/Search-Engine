@@ -22,6 +22,11 @@ CLEANING_TEST_CASES = [
 ]
 @pytest.mark.parametrize("unclean_list, cleaned_list", CLEANING_TEST_CASES)
 def test_clean_scraped_data_alt(unclean_list, cleaned_list):
+    """Tests cleaning scraped word lists before indexing.
+
+    The JSON loader and file open are mocked so the test can supply controlled
+    input data without reading the real crawl output from disk.
+    """
     input_data = {BASE_URL: unclean_list}
     
     idx = Indexer()
@@ -62,6 +67,7 @@ INDEXING_TEST_CASES = [
 ]
 @pytest.mark.parametrize("input_dict, indexed_dict", INDEXING_TEST_CASES)
 def test_indexing(input_dict, indexed_dict):
+    """Tests building the inverted index from cleaned page data."""
     idx = Indexer()
 
     result = idx.create_inverted_index(input_dict)
@@ -94,6 +100,11 @@ FULL_INDEXING_TEST_CASES = [
 ]
 @pytest.mark.parametrize("input_dict, indexed_dict", FULL_INDEXING_TEST_CASES)
 def test_full_indexing_pipeline(input_dict, indexed_dict, tmp_path):
+    """Tests the full indexing pipeline from loaded crawl data to saved index.
+
+    The JSON loader and file open are mocked so the test can drive the pipeline
+    without relying on the real crawl output files.
+    """
     idx = Indexer()
     temp_results_file = tmp_path / "results.json"
     idx.indexed_data_path = temp_results_file
