@@ -1,18 +1,15 @@
-import sys
-
-
 # try except statement is used for imports as pytest runs from the parent dir
 # therefore the import routes are different to just running main.py
 try:
     from src.crawler import Crawler
     from src.indexer import Indexer
     from src.search import Search
-except Exception:
+except (ImportError, ModuleNotFoundError):
     from crawler import Crawler
     from indexer import Indexer
     from search import Search
 
-def main():
+def main() -> None:
     """
     Main command line argument function, takes the user function and runs correct code
     """
@@ -54,7 +51,7 @@ def main():
             break
         
 
-def help():
+def help() -> None:
     """
     Prints a formatted guide of available commands for the interactive shell.
     """
@@ -79,14 +76,14 @@ def help():
     print("="*45 + "\n")
 
 
-def find(arguments: list[str], s: Search | None):
+def find(arguments: list[str], s: Search | None) -> None:
     """Use the search engine to get a list of sites printed which matches the arguments
 
     Args:
         arguments (list[str]): list of the search terms
         s (Search | None): Search class, if it exists the search is done, otherwise it fails
     """
-    if s == None:
+    if s is None:
         print("Index must be loaded to memory, run the 'load' command first.")
         return 
     
@@ -102,14 +99,14 @@ def find(arguments: list[str], s: Search | None):
     return 
 
 
-def print_index(arguments: list[str], s: Search | None):
+def print_index(arguments: list[str], s: Search | None) -> None:
     """Print the inverted index for a given word
 
     Args:
         arguments (list[str]): list of arguments, but we only use arguments[1] for search if exists
         s (Search | None): Search class, if it exists the search is done, otherwise it fails
     """
-    if s == None:
+    if s is None:
         print("Index must be loaded to memory, run the 'load' command first.")
         return 
     
@@ -130,7 +127,7 @@ def load(s: Search | None) -> Search | None:
     Returns:
         Search | None: Search class will be returned if no issues making it
     """
-    if s == None:
+    if s is None:
         try:
             s = Search()
         except RuntimeError:

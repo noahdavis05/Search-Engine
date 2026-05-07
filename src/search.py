@@ -90,7 +90,7 @@ class Search:
         
         return clean_query
     
-    def print_index(self, keyword: str):
+    def print_index(self, keyword: str) -> None:
         """Print the inverted index for a given term
 
         Args:
@@ -105,7 +105,7 @@ class Search:
         
         target_word = cleaned_keyword[0]
         
-        # create a hard copy so we don't edit the old in making number of occurrences instead of indexes of poisionts
+        # create a hard copy so we don't edit the old in making number of occurrences instead of indexes of positions
         occurrences_map = {
             page_id: len(locations) 
             for page_id, locations in self.indexed_data[target_word].items()
