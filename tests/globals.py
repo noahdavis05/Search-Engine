@@ -113,6 +113,16 @@ HTML_CONTENT6 = """
     </div>
 """
 
+HTML_CONTENT7 = """
+    <div class="container">
+        <h3>Author Profile</h3>
+        <div class="author-details">
+            Noah Davis wrote this test.
+        </div>
+        <div class="author-born-date">January 01, 1990</div>
+    </div>
+"""
+
 
 FULL_SITE_HOME = """
     <div class="container">

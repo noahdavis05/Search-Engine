@@ -2,7 +2,7 @@ import pytest
 import json
 import requests
 from src.crawler import Crawler, BASE_URL
-from globals import HTML_CONTENT1, HTML_CONTENT2, HTML_CONTENT3, HTML_CONTENT4, HTML_CONTENT5, HTML_CONTENT6
+from globals import HTML_CONTENT1, HTML_CONTENT2, HTML_CONTENT3, HTML_CONTENT4, HTML_CONTENT5, HTML_CONTENT6, HTML_CONTENT7
 from globals import FULL_SITE_HOME, FULL_SITE_AUTHOR, FULL_SITE_TAG_TAG
 
 
@@ -41,6 +41,11 @@ EXTRACT_TEST_CASES = [
         # scenario where tags are missing
         HTML_CONTENT6,
         ["page", "title", "this", "is", "a", "quote", "noah", "davis"]
+    ),
+    (
+        # scenario where it is an author page instead of normal quote page
+        HTML_CONTENT7,
+        ["noah", "davis", "wrote", "this", "test"]
     )
 ]
 
